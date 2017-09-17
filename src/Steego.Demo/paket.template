@@ -6,11 +6,11 @@ owners
 authors 
     Steve Goguen
 projectUrl
-    steego/Steego.Demo/steego/Steego.Demo
+    http://github.com/steego/Steego.Demo
 iconUrl
     https://raw.githubusercontent.com/steego/Steego.Demo/master/docs/files/img/logo.png
 licenseUrl
-    steego/Steego.Demo/steego/Steego.Demo/blob/master/LICENSE.txt
+    http://github.com/steego/Steego.Demo/blob/master/LICENSE.txt
 requireLicenseAcceptance
     false
 copyright
