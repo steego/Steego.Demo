@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Tag - Steego.Demo</title>
+    <title>MemberGetter - Steego.Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steve Goguen"/>
@@ -35,53 +35,36 @@
 
 
 
-<h1>Tag</h1>
+<h1>MemberGetter</h1>
 <p>
-  <span>Namespace: Steego.Demo</span><br />
-  <span>Parent Module: <a href="steego-demo-html.html">Html</a></span>
+  <span>Namespace: Steego</span><br />
+  <span>Parent Module: <a href="steego-typeinfo.html">TypeInfo</a></span>
 </p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+  <h3>Constructors</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Constructor</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '99', 99)" onmouseover="showTip(event, '99', 99)">
-            Tag(Name,Attributes,Body)
+          <code onmouseout="hideTip(event, '81', 81)" onmouseover="showTip(event, '81', 81)">
+            new(name, memberType, getter)
           </code>
-          <div class="tip" id="99">
-            <strong>Signature:</strong> string * Map&lt;string,string&gt; * Tag list<br />
+          <div class="tip" id="81">
+            <strong>Signature:</strong> (name:string * memberType:Type * getter:Func&lt;obj,obj&gt;) -&gt; MemberGetter<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/HTML.fs#L13-13" class="github-link">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypeInfo.fs#L52-52" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '100', 100)" onmouseover="showTip(event, '100', 100)">
-            Text(string)
-          </code>
-          <div class="tip" id="100">
-            <strong>Signature:</strong> string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/HTML.fs#L14-14" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
+              <p>CompiledName: <code>.ctor</code></p>
         </td>
       </tr>
     </tbody>
@@ -95,19 +78,76 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '101', 101)" onmouseover="showTip(event, '101', 101)">
-            Write(w)
+          <code onmouseout="hideTip(event, '82', 82)" onmouseover="showTip(event, '82', 82)">
+            Get(o)
           </code>
-          <div class="tip" id="101">
-            <strong>Signature:</strong> w:TextWriter -&gt; unit<br />
-                      </div>
+          <div class="tip" id="82">
+            <strong>Signature:</strong> o:&#39;b -&gt; obj<br />
+                          <strong>Type parameters:</strong> 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/HTML.fs#L15-15" class="github-link">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypeInfo.fs#L55-55" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '83', 83)" onmouseover="showTip(event, '83', 83)">
+            IsEnumerable
+          </code>
+          <div class="tip" id="83">
+            <strong>Signature:</strong> bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypeInfo.fs#L56-56" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_IsEnumerable</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '84', 84)" onmouseover="showTip(event, '84', 84)">
+            Name
+          </code>
+          <div class="tip" id="84">
+            <strong>Signature:</strong> string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypeInfo.fs#L53-53" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_Name</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
+            Type
+          </code>
+          <div class="tip" id="85">
+            <strong>Signature:</strong> Type<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypeInfo.fs#L54-54" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_Type</code></p>
         </td>
       </tr>
     </tbody>

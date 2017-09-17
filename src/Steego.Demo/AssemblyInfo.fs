@@ -5,8 +5,8 @@ open System.Reflection
 [<assembly: AssemblyTitleAttribute("Steego.Demo")>]
 [<assembly: AssemblyProductAttribute("Steego.Demo")>]
 [<assembly: AssemblyDescriptionAttribute("A demo libray")>]
-[<assembly: AssemblyVersionAttribute("1.0.2")>]
-[<assembly: AssemblyFileVersionAttribute("1.0.2")>]
+[<assembly: AssemblyVersionAttribute("1.0.2.1")>]
+[<assembly: AssemblyFileVersionAttribute("1.0.2.1")>]
 [<assembly: AssemblyConfigurationAttribute("Release")>]
 do ()
 
@@ -14,6 +14,6 @@ module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyTitle = "Steego.Demo"
     let [<Literal>] AssemblyProduct = "Steego.Demo"
     let [<Literal>] AssemblyDescription = "A demo libray"
-    let [<Literal>] AssemblyVersion = "1.0.2"
-    let [<Literal>] AssemblyFileVersion = "1.0.2"
+    let [<Literal>] AssemblyVersion = "1.0.2.1"
+    let [<Literal>] AssemblyFileVersion = "1.0.2.1"
     let [<Literal>] AssemblyConfiguration = "Release"
