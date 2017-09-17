@@ -1,6 +1,7 @@
 RESTRICTION: >= net45
 NUGET
   remote: https://www.nuget.org/api/v2
+    fasterflect (2.1.3)
     FSharp.Core (4.0.0.1) - redirects: force
     Suave (2.2.1)
       FSharp.Core (>= 4.0.0.1)
