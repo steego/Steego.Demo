@@ -1,0 +1,25 @@
+type project
+title
+    Steego.Demo
+owners
+    Steve Goguen
+authors 
+    Steve Goguen
+projectUrl
+    steego/Steego.Demo/steego/Steego.Demo
+iconUrl
+    https://raw.githubusercontent.com/steego/Steego.Demo/master/docs/files/img/logo.png
+licenseUrl
+    steego/Steego.Demo/steego/Steego.Demo/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    F#
+summary
+    A demo libray
+description
+    Description not set
+
+

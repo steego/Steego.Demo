@@ -1,4 +1,4 @@
-﻿namespace FSharp.ProjectTemplate
+namespace Steego.Demo
 
 /// Documentation for my library
 ///

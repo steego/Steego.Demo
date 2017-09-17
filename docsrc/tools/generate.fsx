@@ -11,17 +11,17 @@
 // (This is the original behaviour of ProjectScaffold prior to multi project support)
 let referenceBinaries = []
 // Web site location for the generated documentation
-let website = "/##ProjectName##"
+let website = "/Steego.Demo"
 
-let githubLink = "##GitUrl##/##GitHome##/##GitName##"
+let githubLink = "steego/Steego.Demo/steego/Steego.Demo"
 
 // Specify more information about your project
 let info =
-  [ "project-name", "##ProjectName##"
-    "project-author", "##Author##"
-    "project-summary", "##Summary##"
+  [ "project-name", "Steego.Demo"
+    "project-author", "Steve Goguen"
+    "project-summary", "A demo libray"
     "project-github", githubLink
-    "project-nuget", "http://nuget.org/packages/##ProjectName##" ]
+    "project-nuget", "http://nuget.org/packages/Steego.Demo" ]
 
 // --------------------------------------------------------------------------------------
 // For typical project, no changes are needed below

@@ -1,6 +1,6 @@
-﻿module FSharp.ProjectScaffold.Tests
+module Steego.Demo.Tests
 
-open FSharp.ProjectTemplate
+open Steego.Demo
 open NUnit.Framework
 
 [<Test>]
