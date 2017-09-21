@@ -76,7 +76,7 @@ let rec printHtml (level:int) =
                 | HtmlObject(h) -> h.ToHtml
                 | :? Html.Tag as t -> t
                 | IsPrimitive(n) -> Html.Text(n.ToString())
-                | GenericList(getters, list) -> printGenericNavList (level - 1)  getters list n
+                | GenericList(_, getters, list) -> printGenericNavList (level - 1)  getters list n
                 | Object(members, _, _, _, _) -> printNavObject (level - 1) members n
                 | o -> print level o
             | :? int as v -> Html.Text(v.ToString())
@@ -84,9 +84,9 @@ let rec printHtml (level:int) =
             | :? DateTime as v -> Html.Text(v.ToShortDateString())
             | IsPrimitive(n) -> Html.Text(n.ToString())
             | IsNullable(n) -> Html.Text(n.ToString())
-            | GenericList(_, _) -> Html.Text("List...")
+            | GenericList(_) -> Html.Text("List...")
             | :? System.Collections.IEnumerable -> Html.Text("List...")
-            | Object(_, _, _, _, _) -> Html.Text("Object...")
+            | Object(_) -> Html.Text("Object...")
             | _ -> Html.Text("...")
         else
             match o with
@@ -99,7 +99,8 @@ let rec printHtml (level:int) =
                 | HtmlObject(h) -> h.ToHtml
                 | :? Html.Tag as t -> t
                 | IsPrimitive(n) -> Html.Text(n.ToString())
-                | GenericList(getters, list) -> printGenericNavList (level - 1)  getters list n
+                | GenericList(Primitive(_), _, list) -> printList (level - 1) list
+                | GenericList(_, getters, list) -> printGenericNavList (level - 1)  getters list n
                 | Object(members, _, _, _, _) -> printNavObject (level - 1) members n
                 | o -> print level o
             | :? int as v -> Html.Text(v.ToString())
@@ -107,17 +108,18 @@ let rec printHtml (level:int) =
             | :? DateTime as v -> Html.Text(v.ToShortDateString())
             | IsPrimitive(n) -> Html.Text(n.ToString())
             | IsNullable(n) -> Html.Text(n.ToString())
-            | GenericList(getters, list) -> printGenericList (level - 1)  getters list
+            | GenericList(Primitive(_), _, list) -> printList (level - 1) list
+            | GenericList(_, getters, list) -> printGenericList (level - 1)  getters list
             | :? System.Collections.IEnumerable as s -> printList (level - 1) s
             | Object(members, _, _, _, _) -> printObject (level - 1) members o
             | _ -> Html.Text("...")        
 
-    and printNavObject (level:int) (getters:MemberGetter list) (n:NavContext) =
+    and printNavObject (level:int) (_:MemberGetter list) (n:NavContext) =
             let o = n.Value
-            let typeInfo = new TypeInfo(o)
+            let typeInfo = TypeInfo(o)
             let primativeMembers = typeInfo.PrimitiveMembers
             table 
-                [("class", "table table-bordered table-striped")]
+                [("class", "navObject table table-bordered table-striped")]
                 [   
                     yield th [("colspan", "2")] [ Html.Text(typeInfo.Name) ] 
                     //  Show primitive members
@@ -141,12 +143,12 @@ let rec printHtml (level:int) =
                         ]
                 ]
 
-    and printObject (level:int) (getters:MemberGetter list) =
+    and printObject (level:int) (_:MemberGetter list) =
         fun (o:obj) ->
-            let typeInfo = new TypeInfo(o)
+            let typeInfo = TypeInfo(o)
             let primativeMembers = typeInfo.PrimitiveMembers
             table 
-                [("class", "table table-bordered table-striped")]
+                [("class", "simpleObj table table-bordered table-striped")]
                 [   
                     yield th [("colspan", "2")] [ Html.Text(typeInfo.Name) ] 
                     //  Show primitive members
@@ -168,7 +170,7 @@ let rec printHtml (level:int) =
 
     and printList (level:int) (list:IEnumerable) = 
         let list = seq { for o in list -> o }
-        table [("class", "table table-bordered table-striped")]
+        table [("class", "simpleList table table-bordered table-striped")]
               [  for item in list.Take(maxTake) do
                     let value = item |> print level
                     yield tr [] [ td [] [ value ] ] 
@@ -177,7 +179,7 @@ let rec printHtml (level:int) =
     and printGenericNavList (level:int) (getters:MemberGetter list) (list:IEnumerable) (n:NavContext) =
         let list = seq { for o in list -> o }
         table 
-            [("class", "table table-bordered table-striped")]
+            [("class", "genericNavList table table-bordered table-striped")]
             [ thead [] [    
                             yield th [] [ Html.Text("") ]
                             for g in getters do 
@@ -197,7 +199,7 @@ let rec printHtml (level:int) =
     and printGenericList (level:int) (getters:MemberGetter list) (list:IEnumerable) =
         let list = seq { for o in list -> o }
         table 
-            [("class", "table table-bordered table-striped")]
+            [("class", "genericList table table-bordered table-striped")]
             [ thead [] [ for g in getters -> th [] [ Html.Text(g.Name) ] ]
               tbody [] [ for item in list.Take(maxTake) do
                             yield tr [] [ for g in getters do

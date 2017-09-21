@@ -12,7 +12,7 @@ let private primitiveTypes = [
     typeof<int16>; typeof<uint64>; typeof<uint16>; typeof<bool>  
 ]
 
-let (|Primitive|)(t:Type) = if primitiveTypes.Contains(t) then Some() else None
+let (|Primitive|)(t:Type) = if primitiveTypes.Contains(t) then Some(t) else None
 
 let (|GenericType|_|) (t:Type) = 
     if t.IsGenericType then Some(t.GetGenericArguments() |> List.ofArray)
@@ -35,6 +35,7 @@ let (|GenericInterface|_|) (find:Type) (t:Type) =
     }
 
 module GenericTypes = 
+    let listType = typedefof<List<_>>
     let seqType = typedefof<seq<_>>
     let dictType = typedefof<IDictionary<_,_>>
     let arrayType = typedefof<_[]>
@@ -51,6 +52,7 @@ let (|SimpleEnumerable|_|) = function
 
 let (|IEnumerable|_|) = function
     | GenericInterface GenericTypes.seqType [t] -> Some(t)
+    | GenericInterface GenericTypes.listType [t] -> Some(t)
     | _ -> None
 
 let (|UntypedDictionary|_|) = function
@@ -96,11 +98,6 @@ let (|IsPrimitive|_|) (candidate : obj) =
     if isPrimitiveObject(candidate) then Some(candidate)
     else None
 
-//let (|ObjImplements|_|) (find:Type) (o:obj) = 
-//    let t : Type = if o <> null then o.GetType() else null
-//    if t = find || t.Implements(find) then Some(o) else None
-
-
 let (|GenericList|_|)(o:obj) =
     if isNull o then None
     else
@@ -110,7 +107,7 @@ let (|GenericList|_|)(o:obj) =
             if not ti.IsPrimitive then
                 let getters = ti.ElementType.Members
                 let list = o :?> IEnumerable
-                Some(getters, list)
+                Some(t, getters, list)
             else 
                 None
         elif t.IsArray && t.HasElementType then
@@ -118,7 +115,7 @@ let (|GenericList|_|)(o:obj) =
             if not ti.IsPrimitive then
                 let getters = ti.ElementType.Members
                 let list = o :?> IEnumerable
-                Some(getters, list)
+                Some(t, getters, list)
             else 
                 None                
         else None

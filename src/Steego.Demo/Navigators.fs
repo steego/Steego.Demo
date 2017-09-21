@@ -71,23 +71,14 @@ let toContext(value:'a) = { Value = value :> obj; Path = [] }
 let addPath(segment,newValue) (ctx:NavContext) = 
     { Value = newValue :> obj; Path = segment::ctx.Path }
 
-//type NavContext(value:obj, path:string list) = 
-//    member this.Value = value
-//    member this.Path = path
-//    member this.AddPath(segment, newValue) = NavContext(newValue, segment::path)
-//    member this.SetValue(value:obj) = NavContext(value, path)
-//    new(value) = NavContext(value, [])
-//
-//let ToContext<'a>(value:'a) = NavContext(value :> obj, [])
-
 let NavigatePath(navRule:NavRule) = 
     let navNext(obj:NavContext)(path:string) : NavContext = 
         match navRule path obj.Value with
         | Some(value) -> obj |> addPath(path, value)
         | None -> raise(exn("Member not found!"))
     fun (path:string list) (obj:NavContext) ->
-        if obj.Value = null then obj
-        elif path = [] then obj
+        if isNull obj.Value then obj
+        elif List.isEmpty path then obj
         else
             path |> List.fold navNext obj
 
@@ -96,7 +87,7 @@ open Steego.TypeInfo
 let navRule(rule:NavRuleMap) : NavRule = 
   let lookup = rule |> cacheTypeInfo
   fun name obj ->
-    let t = if obj = null then null else obj.GetType()
+    let t = if isNull obj then null else obj.GetType()
     let rule = lookup t
     rule name obj
 
@@ -105,7 +96,7 @@ let defaultNavRule : NavRule = navRule defaultNavRuleMap
 let navPath = NavigatePath defaultNavRule
 
 let NavigateContext(path:string)(n:NavContext) = 
-    let isNotBlank(s:string) = String.IsNullOrWhiteSpace(s) = false
+    let isNotBlank(s:string) = not (String.IsNullOrWhiteSpace(s))
     let path = path.Split('/') |> List.ofArray |> List.filter isNotBlank
     let result = n |> navPath path
     result
