@@ -60,6 +60,7 @@
 
     <Compile Include="Reflection.fs" />
     <Compile Include="WebServer.fs" />
+    <Compile Include="SocketServer.fs" />
     <Compile Include="Explorer.fs" />
     <None Include="Script.fsx" />
     <None Include="paket.references" />

@@ -9,6 +9,7 @@
 #load "Printer.fs"
 #load "Reflection.fs"
 #load "WebServer.fs"
+#load "SocketServer.fs"
 #load "Explorer.fs"
 #endif
 
@@ -31,16 +32,23 @@ type App() =
     member this.Folders = 
         System.IO.Directory.EnumerateDirectories("/Users/sgoguen/projects")
         |> Seq.map (fun d -> Dir(d))
+        |> Seq.toArray
 
 
 let app = App()
 
-let test = ["One"; "Two"; "Three"]
+let test = ["One"; "Two"; "Three"] |> Seq.ofList
 
 // Steego.Demo.Reflection.TypeInfo(test.GetType())
+test |> printHtml 1 |> explore 1
 
-// test |> printHtml 2 |> explore 1
+app.Folders.GetType() |> printHtml 1
 
-app.Folders |> printHtml 1
+
+
+Steego.Demo.SocketServer.start()
 
 app |> explore 1
+
+System.Console.WriteLine("Press enter to finish")
+System.Console.ReadLine()
