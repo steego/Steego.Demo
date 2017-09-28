@@ -72,9 +72,9 @@ open Suave.WebSocket
 
 type Id = string
 
-module Sockets = begin
+module Common = begin
 
-    let sendText (webSocket : WebSocket) (response:string) = begin
+    let private sendText (webSocket : WebSocket) (response:string) = begin
         let byteResponse =
           response
           |> System.Text.Encoding.ASCII.GetBytes
@@ -84,7 +84,7 @@ module Sockets = begin
         webSocket.send Text byteResponse true
     end   
 
-    type Commands = 
+    type private Commands = 
         | ReceiveString of Id * WebSocket * string
         | SendAll of string
         | CloseSocket of Id
@@ -111,58 +111,74 @@ module Sockets = begin
         doLoop(Map.empty)
     end
 
-    let private inbox = MailboxProcessor.Start(startMailbox)
+    let (|Message|_|) msg = 
+        match msg with
+        | (Text, data, true) -> Some(System.Text.Encoding.UTF8.GetString(data))
+        | _ -> None
 
-    let onConnect(id, socket, data) = inbox.Post(ReceiveString(id, socket, data))
-    let sendAll(text) = inbox.Post(SendAll(text))
-    let closeSocket(id) = inbox.Post(CloseSocket(id))
+
+
+    [<Literal>]
+    let HeadTemplate = @"
+      <head>
+        <!--<meta http-equiv='refresh' content='2' /> -->
+        <link href=""https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"" rel=""stylesheet"" integrity=""sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"" crossorigin=""anonymous"">
+        <script src=""https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"" integrity=""sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"" crossorigin=""anonymous""></script>
+        
+      </head>
+    "
+
+    let pageContent = sprintf "<html>%s\n%s<body><div id='output'>%s</div></body></html>" HeadTemplate Scripts ("")
+
+
+
+
+    type Server(defaultConfig:SuaveConfig) = 
+        let inbox = MailboxProcessor.Start(startMailbox)
+
+        let socketHandler (ws : WebSocket) (_: HttpContext) =
+
+          socket {
+            let mutable loop = true
+            let id : Id = Guid.NewGuid().ToString()
+
+            while loop do
+              let! msg = ws.read()
+              match msg with
+              | Message(str) -> inbox.Post(ReceiveString(id, ws, str))
+              | (Close, _, _) -> inbox.Post(CloseSocket(id))
+                                 loop <- false
+              | _ -> ()
+            done
+          }
+
+        let app : WebPart = 
+          choose [
+            path "/websocket" >=> handShake socketHandler
+            GET >=> choose [ path "/" >=> Successful.OK(pageContent) ]
+            NOT_FOUND "Found no handlers." ]
+
+        let start() = 
+            Async.Start(async {
+                startWebServer { defaultConfig with logger = Targets.create Verbose [||] } app
+            })
+
+
+        member this.Start() = start()
+        member this.SendHtml(html:string) =  inbox.Post(SendAll(html))
+
+
 
 end
 
-let (|Message|_|) msg = 
-    match msg with
-    | (Text, data, true) -> Some(System.Text.Encoding.UTF8.GetString(data))
-    | _ -> None
+let private servers = System.Collections.Concurrent.ConcurrentDictionary<int, Common.Server>()
+let  private createServer(port:int) = 
+    let config = 
+        { defaultConfig with 
+            bindings = [ HttpBinding.createSimple HTTP "127.0.0.1" port ] 
+        }
+    let server = Common.Server(config)
+    server.Start()
+    server
 
-let private socketHandler (ws : WebSocket) (context: HttpContext) =
-
-  socket {
-    let mutable loop = true
-    let id : Id = Guid.NewGuid().ToString()
-
-    while loop do
-      let! msg = ws.read()
-      match msg with
-      | Message(str) -> Sockets.onConnect(id, ws, str)
-      | (Close, _, _) -> Sockets.closeSocket(id)
-                         loop <- false
-      | _ -> ()
-    done
-  }
-
-[<Literal>]
-let HeadTemplate = @"
-  <head>
-    <!--<meta http-equiv='refresh' content='2' /> -->
-    <link href=""https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"" rel=""stylesheet"" integrity=""sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"" crossorigin=""anonymous"">
-    <script src=""https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"" integrity=""sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"" crossorigin=""anonymous""></script>
-    
-  </head>
-"
-
-let pageContent = sprintf "<html>%s\n%s<body><div id='output'>%s</div></body></html>" HeadTemplate Scripts ("")
-
-let app : WebPart = 
-  choose [
-    path "/websocket" >=> handShake socketHandler
-    GET >=> choose [ path "/" >=> Successful.OK(pageContent) ]
-    //GET >=> choose [ path "/" >=> file "index.html"; browseHome ]
-    NOT_FOUND "Found no handlers." ]
-
-
-let start() = 
-    Async.Start(async {
-        startWebServer { defaultConfig with logger = Targets.create Verbose [||] } app
-    })
-
-let sendHtml(html:string) = Sockets.sendAll(html)
+let getServer(port) = servers.GetOrAdd(port, fun port -> createServer(port))

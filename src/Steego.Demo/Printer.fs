@@ -37,13 +37,7 @@ let link(path:string list)(text:string) =
     let url = String.Join("/", (path |> List.map Html.Encoders.url |> List.rev |> List.toArray))
     a [("href", "/" + url)] [ Html.Text(text) ]
 
-//let keyValueRow(name:string, value:Html.Tag) = 
-//    tr [] [ 
-//        th [] [ Html.Text(name) ]
-//        td [] [ value ] 
-//    ]
-
-let info = new TypeInfo(null)
+let info = TypeInfo(null)
 
 let maxTake = 100
 
@@ -53,7 +47,7 @@ module Patterns =
     open Fasterflect
     
     let (|HtmlObject|_|) (o:obj)  = 
-        let t : Type = if o <> null then o.GetType() else null
+        let t : Type = if not (isNull o) then o.GetType() else null
         if t = htmlObjectType || t.Implements(htmlObjectType) then 
             Some(o :?> Html.IHtmlObject) 
         else 
@@ -63,56 +57,35 @@ open Patterns
 
 let rec printHtml (level:int) = 
     
-
     let rec print (level:int) (o:obj) : Html.Tag =         
-        if level < 1 then
-            match o with
+        match o with
+        | null -> Html.Text("<null>")
+        | HtmlObject(h) -> h.ToHtml
+        | :? Html.Tag as t -> t
+        | :? int as v -> Html.Text(v.ToString())
+        | :? String as s -> Html.Text(s)
+        | :? DateTime as v -> Html.Text(v.ToShortDateString())
+        | IsPrimitive(n) -> Html.Text(n.ToString())
+        | IsNullable(n) -> Html.Text(n.ToString())
+        | :? NavContext as n ->
+            match n.Value with
             | null -> Html.Text("<null>")
             | HtmlObject(h) -> h.ToHtml
             | :? Html.Tag as t -> t
-            | :? NavContext as n ->
-                match n.Value with
-                | null -> Html.Text("<null>")
-                | HtmlObject(h) -> h.ToHtml
-                | :? Html.Tag as t -> t
-                | IsPrimitive(n) -> Html.Text(n.ToString())
-                | GenericList(_, getters, list) -> printGenericNavList (level - 1)  getters list n
-                | Object(members, _, _, _, _) -> printNavObject (level - 1) members n
-                | o -> print level o
-            | :? int as v -> Html.Text(v.ToString())
-            | :? String as s -> Html.Text(s)
-            | :? DateTime as v -> Html.Text(v.ToShortDateString())
             | IsPrimitive(n) -> Html.Text(n.ToString())
-            | IsNullable(n) -> Html.Text(n.ToString())
-            | GenericList(_) -> Html.Text("List...")
-            | :? System.Collections.IEnumerable -> Html.Text("List...")
-            | Object(_) -> Html.Text("Object...")
-            | _ -> Html.Text("...")
-        else
-            match o with
-            | null -> Html.Text("<null>")
-            | HtmlObject(h) -> h.ToHtml
-            | :? Html.Tag as t -> t    
-            | :? NavContext as n ->
-                match n.Value with
-                | null -> Html.Text("<null>")
-                | HtmlObject(h) -> h.ToHtml
-                | :? Html.Tag as t -> t
-                | IsPrimitive(n) -> Html.Text(n.ToString())
-                | GenericList(Primitive(_), _, list) -> printList (level - 1) list
-                | GenericList(_, getters, list) -> printGenericNavList (level - 1)  getters list n
-                | Object(members, _, _, _, _) -> printNavObject (level - 1) members n
-                | o -> print level o
-            | :? int as v -> Html.Text(v.ToString())
-            | :? String as s -> Html.Text(s)
-            | :? DateTime as v -> Html.Text(v.ToShortDateString())
-            | IsPrimitive(n) -> Html.Text(n.ToString())
-            | IsNullable(n) -> Html.Text(n.ToString())
             | GenericList(Primitive(_), _, list) -> printList (level - 1) list
-            | GenericList(_, getters, list) -> printGenericList (level - 1)  getters list
-            | :? System.Collections.IEnumerable as s -> printList (level - 1) s
-            | Object(members, _, _, _, _) -> printObject (level - 1) members o
-            | _ -> Html.Text("...")        
+            | GenericList(_, getters, list) -> printGenericNavList (level - 1)  getters list n
+            | Object(members, _, _, _, _) -> printNavObject (level - 1) members n
+            | o -> print level o
+        | GenericList(_) when level < 1 -> Html.Text("List...")
+        | :? System.Collections.IEnumerable when level < 1 -> Html.Text("List...")
+        | Object(_) when level < 1 -> Html.Text("Object...")
+        | _ when level < 1 -> Html.Text("...")
+        | GenericList(Primitive(_), _, list) -> printList (level - 1) list
+        | GenericList(_, getters, list) -> printGenericList (level - 1)  getters list
+        | :? System.Collections.IEnumerable as s -> printList (level - 1) s
+        | Object(members, _, _, _, _) -> printObject (level - 1) members o
+        | _ -> Html.Text("...")         
 
     and printNavObject (level:int) (_:MemberGetter list) (n:NavContext) =
             let o = n.Value

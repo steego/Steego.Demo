@@ -13,6 +13,7 @@
 #load "Explorer.fs"
 #endif
 
+
 open System.IO
 open Steego.Demo.Explorer
 open Steego.Printer
@@ -27,28 +28,24 @@ type Dir(path:string) =
     member this.Files = 
         Directory.EnumerateFiles(path)
 
-type App() = 
+type App(root:string) = 
     member this.Name = "My super app"
     member this.Folders = 
-        System.IO.Directory.EnumerateDirectories("/Users/sgoguen/projects")
+        System.IO.Directory.EnumerateDirectories(root)
         |> Seq.map (fun d -> Dir(d))
         |> Seq.toArray
 
 
-let app = App()
+let app = App(@"C:\Projects")
 
-let test = ["One"; "Two"; "Three"] |> Seq.ofList
+// let test = ["One"; "Two"; "Three"] |> Seq.ofList
 
-// Steego.Demo.Reflection.TypeInfo(test.GetType())
-test |> printHtml 1 |> explore 1
+// // Steego.Demo.Reflection.TypeInfo(test.GetType())
+// test |> printHtml 1 |> explore 1
 
-app.Folders.GetType() |> printHtml 1
+app.Folders |> explore 1
 
 
+open System.Linq
 
-Steego.Demo.SocketServer.start()
-
-app |> explore 1
-
-System.Console.WriteLine("Press enter to finish")
-System.Console.ReadLine()
+app.Folders |> printHtml 2 |> explore 1

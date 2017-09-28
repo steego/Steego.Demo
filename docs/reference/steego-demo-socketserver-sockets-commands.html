@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>GenericTypes - Steego.Demo</title>
+    <title>Commands - Steego.Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steve Goguen"/>
@@ -35,34 +35,31 @@
 
 
 
-<h1>GenericTypes</h1>
+<h1>Commands</h1>
 <p>
-  <span>Namespace: Steego.Type</span><br />
-  <span>Parent Module: <a href="steego-type-patterns.html">Patterns</a></span>
+  <span>Namespace: Steego.Demo</span><br />
+  <span>Parent Module: <a href="steego-demo-socketserver-sockets.html">Sockets</a></span>
 </p>
 <div class="xmldoc">
 </div>
-
-<!-- Render nested types and modules, if there are any -->
-
-  <h3>Functions and values</h3>
+  <h3>Union Cases</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Function or value</td><td>Description</td></tr>
+      <tr><td>Union Case</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '84', 84)" onmouseover="showTip(event, '84', 84)">
-            arrayType 
+          <code onmouseout="hideTip(event, '115', 115)" onmouseover="showTip(event, '115', 115)">
+            CloseSocket(Id)
           </code>
-          <div class="tip" id="84">
-            <strong>Signature:</strong> Type<br />
+          <div class="tip" id="115">
+            <strong>Signature:</strong> Id<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypePatterns.fs#L41-41" class="github-link">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/SocketServer.fs#L90-90" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -72,15 +69,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '85', 85)" onmouseover="showTip(event, '85', 85)">
-            dictType 
+          <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
+            ReceiveString(Id,WebSocket,string)
           </code>
-          <div class="tip" id="85">
-            <strong>Signature:</strong> Type<br />
+          <div class="tip" id="116">
+            <strong>Signature:</strong> Id * WebSocket * string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypePatterns.fs#L40-40" class="github-link">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/SocketServer.fs#L88-88" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -90,69 +87,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '86', 86)" onmouseover="showTip(event, '86', 86)">
-            listType 
+          <code onmouseout="hideTip(event, '117', 117)" onmouseover="showTip(event, '117', 117)">
+            SendAll(string)
           </code>
-          <div class="tip" id="86">
-            <strong>Signature:</strong> Type<br />
+          <div class="tip" id="117">
+            <strong>Signature:</strong> string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypePatterns.fs#L38-38" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '87', 87)" onmouseover="showTip(event, '87', 87)">
-            nullableType 
-          </code>
-          <div class="tip" id="87">
-            <strong>Signature:</strong> Type<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypePatterns.fs#L42-42" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '88', 88)" onmouseover="showTip(event, '88', 88)">
-            optionType 
-          </code>
-          <div class="tip" id="88">
-            <strong>Signature:</strong> Type<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypePatterns.fs#L43-43" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '89', 89)" onmouseover="showTip(event, '89', 89)">
-            seqType 
-          </code>
-          <div class="tip" id="89">
-            <strong>Signature:</strong> Type<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/TypePatterns.fs#L39-39" class="github-link">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/SocketServer.fs#L89-89" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
