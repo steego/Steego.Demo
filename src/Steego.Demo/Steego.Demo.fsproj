@@ -57,9 +57,7 @@
     <Compile Include="Navigators.fs" />
     <Compile Include="HTML.fs" />
     <Compile Include="Printer.fs" />
-
     <Compile Include="Reflection.fs" />
-    <Compile Include="WebServer.fs" />
     <Compile Include="SocketServer.fs" />
     <Compile Include="Explorer.fs" />
     <None Include="Script.fsx" />

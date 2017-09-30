@@ -8,7 +8,6 @@
 #load "HTML.fs"
 #load "Printer.fs"
 #load "Reflection.fs"
-#load "WebServer.fs"
 #load "SocketServer.fs"
 #load "Explorer.fs"
 #endif
@@ -38,14 +37,8 @@ type App(root:string) =
 
 let app = App(@"C:\Projects")
 
-// let test = ["One"; "Two"; "Three"] |> Seq.ofList
+app |> explore 1
 
-// // Steego.Demo.Reflection.TypeInfo(test.GetType())
-// test |> printHtml 1 |> explore 1
+// open System.Linq
 
-app.Folders |> explore 1
-
-
-open System.Linq
-
-app.Folders |> printHtml 2 |> explore 1
+// app.Folders |> printHtml 2 |> explore 1

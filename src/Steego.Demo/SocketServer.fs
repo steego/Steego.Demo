@@ -94,11 +94,11 @@ module Common = begin
         let rec doLoop(sockets:Map<Id,WebSocket>) = async {
             let! input = inbox.Receive()
             match input with
-            | ReceiveString(id, sock, input) -> 
+            | ReceiveString(id, sock, _) -> 
                 return! sockets |> Map.add id sock |> doLoop
             | SendAll(text) ->
-                for (id, sock) in sockets |> Map.toSeq do
-                    let! res = text |> sendText sock
+                for (_, sock) in sockets |> Map.toSeq do
+                    let! _ = text |> sendText sock
                     ()
                 return! doLoop(sockets)
             | CloseSocket(id) ->
@@ -130,55 +130,77 @@ module Common = begin
 
     let pageContent = sprintf "<html>%s\n%s<body><div id='output'>%s</div></body></html>" HeadTemplate Scripts ("")
 
-
-
-
     type Server(defaultConfig:SuaveConfig) = 
         let inbox = MailboxProcessor.Start(startMailbox)
 
+        let mutable started = false
+        
         let socketHandler (ws : WebSocket) (_: HttpContext) =
+            socket {
+                let mutable loop = true
+                let id : Id = Guid.NewGuid().ToString()
 
-          socket {
-            let mutable loop = true
-            let id : Id = Guid.NewGuid().ToString()
+                while loop do
+                    let! msg = ws.read()
+                    match msg with
+                    | Message(str) -> inbox.Post(ReceiveString(id, ws, str))
+                    | (Close, _, _) -> inbox.Post(CloseSocket(id))
+                                       loop <- false
+                    | _ -> ()
+            }
 
-            while loop do
-              let! msg = ws.read()
-              match msg with
-              | Message(str) -> inbox.Post(ReceiveString(id, ws, str))
-              | (Close, _, _) -> inbox.Post(CloseSocket(id))
-                                 loop <- false
-              | _ -> ()
-            done
-          }
+        let showPath = fun (ctx:HttpContext) -> 
+            async {
+              return! OK (ctx.request.path) ctx
+            }        
 
-        let app : WebPart = 
+        let showPage = choose [ 
+                            path "/" >=> Successful.OK(pageContent) 
+                            showPath
+                       ]
+
+        let mutable app  = 
           choose [
             path "/websocket" >=> handShake socketHandler
-            GET >=> choose [ path "/" >=> Successful.OK(pageContent) ]
+            GET >=> showPage
+            //GET >=> choose [ path "/" >=> Successful.OK(pageContent) ]
             NOT_FOUND "Found no handlers." ]
 
         let start() = 
-            Async.Start(async {
-                startWebServer { defaultConfig with logger = Targets.create Verbose [||] } app
-            })
+            if not started then
+                lock inbox (fun () -> started <- true)
+                let config = { defaultConfig with logger = Targets.create Verbose [||] }
+                let app(ctx : HttpContext) = async { return! (lock inbox (fun () -> app)) ctx }
+                Async.Start(async { startWebServer config app })
 
+        member this.UpdateWebPart(newPart) = 
+            start()
+            lock inbox (fun () -> app <- newPart)
 
-        member this.Start() = start()
-        member this.SendHtml(html:string) =  inbox.Post(SendAll(html))
-
-
+        member this.SendHtml(html:string) = 
+            start()
+            inbox.Post(SendAll(html))
 
 end
 
 let private servers = System.Collections.Concurrent.ConcurrentDictionary<int, Common.Server>()
-let  private createServer(port:int) = 
+let private createServer(port:int) = 
     let config = 
         { defaultConfig with 
             bindings = [ HttpBinding.createSimple HTTP "127.0.0.1" port ] 
         }
     let server = Common.Server(config)
-    server.Start()
     server
 
+
+///**Creates or fetches and instances of a web server at the specified port**
+///
+///**Parameters**
+///  * `port` - parameter of type `int`
+///
+///**Output Type**
+///  * `Common.Server`
+///
+///**Exceptions**
+///
 let getServer(port) = servers.GetOrAdd(port, fun port -> createServer(port))
