@@ -1,5 +1,6 @@
 module Steego.Demo.SocketServer
 
+open System.Threading.Tasks
 open Suave
 open Suave.Http
 open Suave.Operators
@@ -20,7 +21,7 @@ type Id = string
 
 module Common = 
     /// Sends text to a websocket
-    let sendText (webSocket : WebSocket) (response : string) = 
+    let private sendText (webSocket : WebSocket) (response : string) = 
         (let byteResponse = 
              response
              |> System.Text.Encoding.ASCII.GetBytes
@@ -28,40 +29,55 @@ module Common =
          // the `send` function sends a message back to the client
          webSocket.send Text byteResponse true)
     
-    let (|Message|_|) msg = 
+    let private (|Message|_|) msg = 
         match msg with
         | (Text, data, true) -> Some(System.Text.Encoding.UTF8.GetString(data))
         | _ -> None
-
-    type Connection(context : HttpContext, ws : WebSocket) = 
+    
+    type Connection = 
+        abstract Id : string
+        abstract OnReceive : IObservable<Message>
+        abstract SendAsync : string -> Task
+    
+    and Message = 
+        { Connection : Connection
+          Message : string }
+    
+    type private SuaveConnection(context : HttpContext, ws : WebSocket) = 
         let id = Guid.NewGuid().ToString()
         let onReceive = new Event<Message>()
         member this.Id = id
         member this.TellReceived(msg) = onReceive.Trigger(msg)
-        member this.OnReceive = onReceive.Publish
+        member this.OnReceive = onReceive.Publish :> IObservable<_>
         member this.SendAsync(msg : string) = async { let! _ = msg |> sendText ws
-                                                      return true }
-    and Message = { Connection: Connection; Message: string }
-
+                                                      () } 
+        interface Connection with
+            member this.Id = id
+            member this.OnReceive = this.OnReceive
+            member this.SendAsync(msg) = 
+                this.SendAsync(msg) |> Async.StartAsTask :> Task
+    
     type Server(defaultConfig : SuaveConfig) = 
         let mutable started = false
-        let connections = ConcurrentDictionary<string, Connection>()
+        let connections = ConcurrentDictionary<string, SuaveConnection>()
         let onReceive = new Event<Message>()
-        let getConn(id:string) = 
+        
+        let getConn (id : string) = 
             let (exists, conn) = connections.TryGetValue(id)
             conn
         
         let socketHandler (ws : WebSocket) (context : HttpContext) = 
             socket { 
                 let mutable loop = true
-                let conn = Connection(context, ws)
+                let conn = SuaveConnection(context, ws)
                 let id = conn.Id
                 connections.AddOrUpdate(id, conn, fun x y -> conn) |> ignore
                 while loop do
                     let! msg = ws.read()
                     match msg with
                     | Message(str) -> 
-                        onReceive.Trigger( { Connection = getConn(id); Message = str })
+                        onReceive.Trigger({ Connection = getConn (id)
+                                            Message = str })
                     | (Close, _, _) -> 
                         let _ = connections.TryRemove(id)
                         loop <- false
@@ -81,16 +97,14 @@ module Common =
                 Async.Start(async { startWebServer config app })
                 printfn "Web server started"
         
+        member this.Start() = start()
+        
         member this.OnReceived = onReceive.Publish
-        member this.SendHtml(html : string) = 
-            start()
-            async { 
-                for c in connections do
-                    let conn = c.Value
-                    let! _ = conn.SendAsync(html)
-                    ()
-            }
-            |> Async.Start
+        
+        member this.Connections = 
+            connections
+            |> Seq.map (fun c -> c.Value :> Connection)
+            |> Seq.toArray
 
 let private servers = System.Collections.Concurrent.ConcurrentDictionary<int, Common.Server>()
 
@@ -110,3 +124,8 @@ let private createServer (port : int) =
 ///**Exceptions**
 ///
 let getServer (port) = servers.GetOrAdd(port, fun port -> createServer (port))
+let startServer(port) = 
+    let server = getServer(port)
+    server.Start()
+    server
+        

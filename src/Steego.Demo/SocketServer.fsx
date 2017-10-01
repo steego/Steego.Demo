@@ -14,7 +14,7 @@
 open Steego.Demo
 open Steego.Demo.SocketServer
 
-let server = SocketServer.getServer(8080)
+let server = SocketServer.startServer(8080)
 
 open Suave
 open Suave.Http
@@ -26,6 +26,7 @@ open Suave.RequestErrors
 open Suave.Logging
 open Suave.Utils
 
+open Steego.Printer
 
 printfn "Press anything to end"
 
@@ -35,12 +36,18 @@ let printMsg(m:Common.Message) =
 
 server.OnReceived.Subscribe printMsg
 
-async {
+type Info(id:string, count:int, server:Common.Server) = 
+    member this.Id = id
+    member this.Count = count
+    member this.Connections = server.Connections |> Array.map (fun c -> c.Id)
+
+Async.RunSynchronously <| async {
     for i in 1..10000 do
         do! Async.Sleep(200)
-        let msg = sprintf "Counting %i" i
-        //printfn "%s" msg
-        server.SendHtml(msg)
-} |> Async.RunSynchronously
+        let conns = server.Connections
+        for c in conns do
+            let msg = Info(c.Id, i, server) |> print 3
+            do! c.SendAsync(msg) |> Async.AwaitTask
+}
 
 printfn "Exited"
