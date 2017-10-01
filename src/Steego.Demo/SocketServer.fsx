@@ -12,6 +12,7 @@
 #endif
 
 open Steego.Demo
+open Steego.Demo.SocketServer
 
 let server = SocketServer.getServer(8080)
 
@@ -25,26 +26,21 @@ open Suave.RequestErrors
 open Suave.Logging
 open Suave.Utils
 
-let x() = 
-    Suave.Sucessful.OK("Hi")
 
+printfn "Press anything to end"
 
-let myPart = 
-    choose [
-        GET >=> path "/" >=> OK("Howdy partner")
-        //GET >=> request (fun r -> OK("Path: " + r.path))
-        GET >=> browseHome
-        GET >=> path "/admin" >=> 
-            Authentication.authenticateBasic
-                (fun (user,pwd) -> user = "foo" && pwd = "test") 
-                (OK("Howdy admin"))
-    ]
+let printMsg(m:Common.Message) = 
+    printfn "Sender: %s - %s" (m.Connection.Id) (m.Message)
+    ()
 
-System.IO.Directory.GetCurrentDirectory()
+server.OnReceived.Subscribe printMsg
 
-server.UpdateWebPart(myPart)
+async {
+    for i in 1..10000 do
+        do! Async.Sleep(200)
+        let msg = sprintf "Counting %i" i
+        //printfn "%s" msg
+        server.SendHtml(msg)
+} |> Async.RunSynchronously
 
-// server.UpdateWebPart(Successful.OK("Hello"))
-
-// server.SendHtml("Hello <b>World</b>!")
-
+printfn "Exited"

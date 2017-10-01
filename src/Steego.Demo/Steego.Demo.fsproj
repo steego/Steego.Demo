@@ -60,10 +60,10 @@
     <Compile Include="Reflection.fs" />
     <Compile Include="SocketServer.fs" />
     <Compile Include="Explorer.fs" />
-    <None Include="Script.fsx" />
     <None Include="paket.references" />
     <None Include="paket.template" />
     <Content Include="App.config" />
+    <Compile Include="SocketServer.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
