@@ -15,8 +15,11 @@ let explore (level:int) (value:'a) =
 
     let server = SocketServer.getServer(8080)
 
-    tag.ToString() |> server.SendHtml
-
+    Async.RunSynchronously <| async {
+        for c in server.Connections do
+            let html = tag.ToString()
+            do! c.SendAsync(html) |> Async.AwaitTask
+    }
 
 type System.Object with
     member this.Explore(level:int) = explore level this

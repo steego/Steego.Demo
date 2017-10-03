@@ -28,11 +28,10 @@ open Suave.Utils
 
 open Steego.Printer
 
-printfn "Press anything to end"
+Log.debug "Press anything to end"
 
 let printMsg(m:Common.Message) = 
-    printfn "Sender: %s - %s" (m.Connection.Id) (m.Message)
-    ()
+    Log.debug <| sprintf "Sender: %s - %s" (m.Connection.Id) (m.Message)
 
 server.OnReceived.Subscribe printMsg
 
@@ -50,4 +49,4 @@ Async.RunSynchronously <| async {
             do! c.SendAsync(msg) |> Async.AwaitTask
 }
 
-printfn "Exited"
+Log.debug "Exited"

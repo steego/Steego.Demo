@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Tag - Steego.Demo</title>
+    <title>Connection - Steego.Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steve Goguen"/>
@@ -35,57 +35,13 @@
 
 
 
-<h1>Tag</h1>
+<h1>Connection</h1>
 <p>
   <span>Namespace: Steego.Demo</span><br />
-  <span>Parent Module: <a href="steego-demo-html.html">Html</a></span>
+  <span>Parent Module: <a href="steego-demo-socketserver-common.html">Common</a></span>
 </p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '103', 103)" onmouseover="showTip(event, '103', 103)">
-            Tag(Name,Attributes,Body)
-          </code>
-          <div class="tip" id="103">
-            <strong>Signature:</strong> string * Map&lt;string,string&gt; * Tag list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/HTML.fs#L13-13" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '104', 104)" onmouseover="showTip(event, '104', 104)">
-            Text(string)
-          </code>
-          <div class="tip" id="104">
-            <strong>Signature:</strong> string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/HTML.fs#L14-14" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-    </tbody>
-  </table>
   <h3>Instance members</h3>
   <table class="table table-bordered member-list">
     <thead>
@@ -95,15 +51,56 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '105', 105)" onmouseover="showTip(event, '105', 105)">
-            Write(w)
+          <code onmouseout="hideTip(event, '108', 108)" onmouseover="showTip(event, '108', 108)">
+            Id
           </code>
-          <div class="tip" id="105">
-            <strong>Signature:</strong> w:TextWriter -&gt; unit<br />
+          <div class="tip" id="108">
+            <strong>Signature:</strong> string<br />
+              <strong>Modifiers:</strong> abstract<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/HTML.fs#L15-15" class="github-link">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/SocketServer.fs#L44-44" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_Id</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '109', 109)" onmouseover="showTip(event, '109', 109)">
+            OnReceive
+          </code>
+          <div class="tip" id="109">
+            <strong>Signature:</strong> IObservable&lt;Message&gt;<br />
+              <strong>Modifiers:</strong> abstract<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/SocketServer.fs#L45-45" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_OnReceive</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '110', 110)" onmouseover="showTip(event, '110', 110)">
+            SendAsync(arg1)
+          </code>
+          <div class="tip" id="110">
+            <strong>Signature:</strong> string -&gt; Task<br />
+              <strong>Modifiers:</strong> abstract<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://steego/Steego.Demo/steego/Steego.Demo/tree/master/src/Steego.Demo/SocketServer.fs#L46-46" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

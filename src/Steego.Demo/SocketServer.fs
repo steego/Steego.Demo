@@ -19,6 +19,12 @@ open System.Collections.Concurrent
 
 type Id = string
 
+module Log =
+    let getDate() = 
+        let now = DateTime.Now
+        sprintf "%02i:%02i:%02i" (now.Hour) (now.Minute) (now.Second)
+    let debug(msg) = printfn "[%s DBG] %s" (getDate()) msg
+
 module Common = 
     /// Sends text to a websocket
     let private sendText (webSocket : WebSocket) (response : string) = 
@@ -91,11 +97,12 @@ module Common =
         
         let start() = 
             if not started then 
+                Log.debug("Started Webserver Booby!  QQQQQQQQQQQQQQQQQQQ")
                 lock connections (fun () -> started <- true)
                 let config = { defaultConfig with logger = Targets.create Verbose [||] }
                 let app (ctx : HttpContext) = async { return! (lock connections (fun () -> app)) ctx }
                 Async.Start(async { startWebServer config app })
-                printfn "Web server started"
+                Log.debug "Web server started"
         
         member this.Start() = start()
         

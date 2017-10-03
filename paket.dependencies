@@ -10,6 +10,7 @@ source https://nuget.org/api/v2
 
 nuget Fasterflect
 nuget FSharp.Core ~> 4.0.0.1 redirects: force
+nuget logary
 nuget Suave
 
 group Build
