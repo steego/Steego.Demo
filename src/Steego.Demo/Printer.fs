@@ -5,7 +5,8 @@ open System.Text
 open System.Collections
 open System.Linq
 open TypeInfo
-open Steego.Type.Patterns
+open Steego.Type.Patterns.TypePatterns
+open Steego.Type.Patterns.ObjectPatterns
 open Steego.Reflection.Navigators
 open Steego.Demo
 
@@ -32,16 +33,16 @@ let hkeyValueRow(name:Html.Tag, value:Html.Tag) =
         td [] [ value ] 
     ]
 
-
 let link(path:string list)(text:string) = 
-    let url = String.Join("/", (path |> List.map Html.Encoders.url |> List.rev |> List.toArray))
+    let pathArray = path |> List.map Html.Encoders.url |> List.rev |> List.toArray
+    let url = String.Join("/", pathArray)
     a [("href", "/" + url)] [ Html.Text(text) ]
 
 let info = TypeInfo(null)
 
 let maxTake = 100
 
-module Patterns = 
+module Patterns = begin
     let htmlObjectType = typeof<Html.IHtmlObject>
     
     open Fasterflect
@@ -53,11 +54,13 @@ module Patterns =
         else 
             None
 
+end
+
 open Patterns
 
 let rec printHtml (level:int) = 
     
-    let rec print (level:int) (o:obj) : Html.Tag =         
+    let rec print (level:int) (o:obj) : Html.Tag = 
         match o with
         | null -> Html.Text("<null>")
         | HtmlObject(h) -> h.ToHtml
@@ -93,7 +96,7 @@ let rec printHtml (level:int) =
             let primativeMembers = typeInfo.PrimitiveMembers
             table 
                 [("class", "navObject table table-bordered table-striped")]
-                [   
+                [
                     yield th [("colspan", "2")] [ Html.Text(typeInfo.Name) ] 
                     //  Show primitive members
                     for g in primativeMembers do
@@ -116,30 +119,29 @@ let rec printHtml (level:int) =
                         ]
                 ]
 
-    and printObject (level:int) (_:MemberGetter list) =
-        fun (o:obj) ->
-            let typeInfo = TypeInfo(o)
-            let primativeMembers = typeInfo.PrimitiveMembers
-            table 
-                [("class", "simpleObj table table-bordered table-striped")]
-                [   
-                    yield th [("colspan", "2")] [ Html.Text(typeInfo.Name) ] 
-                    //  Show primitive members
-                    for g in primativeMembers do
-                        let value = g.Get(o) |> print level
-                        yield keyValueRow(g.Name, value)
-                    //  Show object members
-                    for g in typeInfo.ObjectMembers do
-                        let value = g.Get(o) |> print level
-                        yield keyValueRow(g.Name, value)
-                    //  Show enumerable members
-                    for g in typeInfo.EnumerableMembers do
-                        let value = g.Get(o) |> print level
-                        yield tr [] [ 
-                            th [("colspan", "1")] [ Html.Text(g.Name) ] 
-                            td [("colspan", "1")] [ value ]
-                        ]
-                ]
+    and printObject (level:int) (_:MemberGetter list) (o:obj) =
+        let typeInfo = TypeInfo(o)
+        let primativeMembers = typeInfo.PrimitiveMembers
+        table 
+            [("class", "simpleObj table table-bordered table-striped")]
+            [
+                yield th [("colspan", "2")] [ Html.Text(typeInfo.Name) ] 
+                //  Show primitive members
+                for g in primativeMembers do
+                    let value = g.Get(o) |> print level
+                    yield keyValueRow(g.Name, value)
+                //  Show object members
+                for g in typeInfo.ObjectMembers do
+                    let value = g.Get(o) |> print level
+                    yield keyValueRow(g.Name, value)
+                //  Show enumerable members
+                for g in typeInfo.EnumerableMembers do
+                    let value = g.Get(o) |> print level
+                    yield tr [] [ 
+                        th [("colspan", "1")] [ Html.Text(g.Name) ] 
+                        td [("colspan", "1")] [ value ]
+                    ]
+            ]
 
     and printList (level:int) (list:IEnumerable) = 
         let list = seq { for o in list -> o }
@@ -153,7 +155,7 @@ let rec printHtml (level:int) =
         let list = seq { for o in list -> o }
         table 
             [("class", "genericNavList table table-bordered table-striped")]
-            [ thead [] [    
+            [ thead [] [
                             yield th [] [ Html.Text("") ]
                             for g in getters do 
                                 yield th [] [ Html.Text(g.Name) ] 

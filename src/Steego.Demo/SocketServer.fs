@@ -113,6 +113,12 @@ module Common =
             |> Seq.map (fun c -> c.Value :> Connection)
             |> Seq.toArray
 
+        member this.SendToAll(msg) = async {
+            for c in this.Connections do
+                do! c.SendAsync(msg) |> Async.AwaitTask
+        }
+                    
+
 let private servers = System.Collections.Concurrent.ConcurrentDictionary<int, Common.Server>()
 
 let private createServer (port : int) = 

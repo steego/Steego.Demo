@@ -8,17 +8,20 @@ open Fasterflect
 
 let inline isNotNull o = not (isNull o)
 
+/// Gets the cache info
 let cacheTypeInfo<'a>(getTypeInfo: Type -> 'a) = 
-  let hashTable = System.Collections.Hashtable()
-  fun(t:Type) ->
-    let result = hashTable.[t]
-    if isNotNull result then result :?> 'a
-    else
-      let newEntry = getTypeInfo(t)
-      lock hashTable (fun () ->
-        hashTable.Add(t, newEntry)
-      )
-      newEntry
+    let hashTable = System.Collections.Hashtable()
+    let getType(t:Type) = begin
+        let result = hashTable.[t]
+        if isNotNull result then result :?> 'a
+        else
+            let newEntry = getTypeInfo(t)
+            lock hashTable (fun () ->
+                hashTable.Add(t, newEntry)
+            )
+            newEntry
+    end
+    getType
 
 let isPrimitiveType(t:Type) = isNotNull t && (t.IsValueType || t = typeof<string>)
 let isPrimitiveObject(o:obj) = (isNull o || isPrimitiveType(o.GetType()))
@@ -80,7 +83,9 @@ let getMemberGetters(t:Type) =
                     yield MemberGetter(f.Name, f.FieldType, fun o -> f.GetValue(o))
         ]
 
-let getElementType(t:Type) = if isNull t then null else t.GetGenericArguments().FirstOrDefault()
+let getElementType(t:Type) = 
+    if isNull t then null 
+    else t.GetGenericArguments().FirstOrDefault()
 
 type TypeInfo(t:Type) = 
     let elementType = getElementType(t)
@@ -90,13 +95,18 @@ type TypeInfo(t:Type) =
     member this.IsPrimitive = isPrimitiveType(t)
     member this.IsNull = isNull t
     member this.Members = members
-    member this.PrimitiveMembers = members |> List.filter(fun m -> isPrimitiveType m.Type)
-    member this.ObjectMembers = members |> List.filter(fun m -> (not (isPrimitiveType m.Type)) && (not (isSeq m.Type)))
-    member this.EnumerableMembers = members |> List.filter(fun m -> isSeq m.Type)    
+    member this.PrimitiveMembers = 
+        members |> List.filter(fun m -> isPrimitiveType m.Type)
+    member this.ObjectMembers = 
+        members 
+        |> List.filter(fun m -> (not (isPrimitiveType m.Type)))
+        |> List.filter(fun m -> (not (isSeq m.Type)))
+    member this.EnumerableMembers = members |> List.filter(fun m -> isSeq m.Type)
     member this.IsSeq = isEnumerable
     member this.IsGenericSeq = isGenericSeq(t)
     member this.ElementType = TypeInfo(elementType)
     new(o:obj) = TypeInfo(if isNull o then null else o.GetType())
 
-let getObjectInfo(o:obj) = if isNull o  then [] else TypeInfo(o.GetType()).Members
+let getObjectInfo(o:obj) = if isNull o then [] 
+                           else TypeInfo(o.GetType()).Members
 

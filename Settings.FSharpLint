@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FSharpLintSettings xmlns="https://github.com/fsprojects/FSharpLint/blob/master/ConfigurationSchema.xsd">
+  <Analysers>
+
+    <NameConventions>
+      <Rules>
+        <MemberNamesMustBePascalCase>
+          <Enabled>true</Enabled>
+        </MemberNamesMustBePascalCase>
+        <RecordFieldNamesMustBePascalCase>
+          <Enabled>true</Enabled>
+        </RecordFieldNamesMustBePascalCase>
+      </Rules>
+    </NameConventions>
+
+    <Typography>
+      <Rules>
+        <MaxCharactersOnLine>
+          <Enabled>true</Enabled>
+          <Length>80</Length>
+        </MaxCharactersOnLine>
+
+        <TrailingWhitespaceOnLine>
+          <Enabled>true</Enabled>
+          <IgnoreBlankLines>True</IgnoreBlankLines>
+          <NumberOfSpacesAllowed>0</NumberOfSpacesAllowed>
+          <OneSpaceAllowedAfterOperator>True</OneSpaceAllowedAfterOperator>          
+        </TrailingWhitespaceOnLine>
+
+        <TrailingNewLineInFile>
+          <Enabled>True</Enabled>
+        </TrailingNewLineInFile>
+
+        <NoTabCharacters>
+          <Enabled>True</Enabled>
+        </NoTabCharacters>  
+      </Rules>
+    </Typography>
+
+    <NestedStatements>
+      <Enabled>true</Enabled>
+      <Depth>8</Depth>
+    </NestedStatements>
+
+    <NumberOfItems>
+      <Rules>
+        <MaxNumberOfMembers>
+          <Enabled>true</Enabled>
+          <MaxItems>32</MaxItems>
+        </MaxNumberOfMembers>
+      </Rules>
+      <Enabled>true</Enabled>
+    </NumberOfItems>
+
+    <SourceLength>
+      <Rules>
+        <MaxLinesInFunction>
+          <Enabled>true</Enabled>
+          <Lines>30</Lines>
+        </MaxLinesInFunction>
+
+        <MaxLinesInLambdaFunction>
+          <Enabled>true</Enabled>
+          <Lines>7</Lines>
+        </MaxLinesInLambdaFunction>
+
+        <MaxLinesInMatchLambdaFunction>
+          <Enabled>true</Enabled>
+          <Lines>3</Lines>
+        </MaxLinesInMatchLambdaFunction>
+
+        <MaxLinesInValue>
+          <Enabled>false</Enabled>
+        </MaxLinesInValue>
+
+        <MaxLinesInConstructor>
+          <Enabled>false</Enabled>
+        </MaxLinesInConstructor>
+
+        <MaxLinesInMember>
+          <Enabled>false</Enabled>
+        </MaxLinesInMember>
+
+        <MaxLinesInProperty>
+          <Enabled>false</Enabled>
+          <Lines>70</Lines>
+        </MaxLinesInProperty>
+
+        <MaxLinesInClass>
+          <Enabled>false</Enabled>
+        </MaxLinesInClass>
+
+        <MaxLinesInEnum>
+          <Enabled>false</Enabled>
+        </MaxLinesInEnum>
+
+        <MaxLinesInUnion>
+          <Enabled>false</Enabled>
+        </MaxLinesInUnion>
+
+        <MaxLinesInRecord>
+          <Enabled>false</Enabled>
+        </MaxLinesInRecord>
+
+        <MaxLinesInModule>
+          <Enabled>false</Enabled>
+        </MaxLinesInModule>
+      </Rules>
+      <Enabled>true</Enabled>
+    </SourceLength>
+
+    <FunctionReimplementation>
+      <Rules>
+
+      </Rules>
+    </FunctionReimplementation>
+
+    <XmlDocumentation Enabled="true">
+      <Enabled>true</Enabled>
+      <Rules>
+        <ModuleDefinitionHeader>
+          <Access>Public</Access>
+          <Enabled>true</Enabled>
+        </ModuleDefinitionHeader>
+
+        <TypeDefinitionHeader>
+          <Access>Public</Access>
+          <Enabled>true</Enabled>
+        </TypeDefinitionHeader>   
+
+        <MemberDefinitionHeader>
+          <Access>Public</Access>
+          <Enabled>true</Enabled>
+        </MemberDefinitionHeader>   
+
+        <EnumDefinitionHeader>
+          <Access>Public</Access>
+          <Enabled>true</Enabled>
+        </EnumDefinitionHeader>   
+
+        <UnionDefinitionHeader>
+          <Access>Public</Access>
+          <Enabled>true</Enabled>
+        </UnionDefinitionHeader>   
+
+        <RecordDefinitionHeader>
+          <Access>Public</Access>
+          <Enabled>true</Enabled>
+        </RecordDefinitionHeader>   
+
+        <AutoPropertyDefinitionHeader>
+          <Access>Public</Access>
+          <Enabled>true</Enabled>
+        </AutoPropertyDefinitionHeader>   
+
+        <LetDefinitionHeader>
+          <Access>All</Access>
+          <Enabled>true</Enabled>
+        </LetDefinitionHeader>        
+      </Rules>
+    </XmlDocumentation>
+  </Analysers>
+</FSharpLintSettings>
