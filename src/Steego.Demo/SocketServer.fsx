@@ -5,6 +5,7 @@
 #if INTERACTIVE
 #r "../Steego.Demo/bin/Release/Fasterflect.dll"
 #r "../Steego.Demo/bin/Release/Suave.dll"
+#r "../../packages/FSharp.Control.Reactive/lib/net45/FSharp.Control.Reactive.dll"
 
 #load "TypeInfo.fs"
 #load "TypePatterns.fs"
@@ -15,46 +16,36 @@
 #load "SocketServer.fs"
 #endif
 
-open Steego.Demo
-open Steego.Demo.SocketServer
-
-let server = SocketServer.startServer(8080)
-
-open Suave
-open Suave.Http
-open Suave.Operators
-open Suave.Filters
-open Suave.Successful
-open Suave.Files
-open Suave.RequestErrors
-open Suave.Logging
-open Suave.Utils
-
-open Steego.Printer
-
 /////////////////////////////////////////////////////////////////////
 //                             IMPORTS                             //
 /////////////////////////////////////////////////////////////////////
 
-Log.debug "Press anything to end"
+open System
+open Steego.Demo
+open FSharp.Control.Reactive
+open Steego.Demo.SocketServer.Common
+open FSharp.Control.Reactive.Builders
 
-let printMsg(m:Common.Message) = 
-    Log.debug <| sprintf "Sender: %s - %s" (m.Connection.Id) (m.Message)
+let rec getServer() = 
+    SocketServer.startServer(8080, handler)
+and handler(events) = 
+    observe {
+        let! e = events
+        let output = sprintf "%A" (e)
+        yield MessageSent(e.Connection, output)
+    }
 
-server.OnReceived.Subscribe printMsg
+open Suave
+open Suave.Operators
+open Suave.Filters
+open Suave.RequestErrors
 
-type Info(id:string, count:int, server:Common.Server) = 
-    member this.Id = id
-    member this.Count = count
-    member this.Connections = server.Connections |> Array.map (fun c -> c.Id)
+let app = 
+    choose [ GET >=> Files.file "src/Steego.Demo/index.html"
+             NOT_FOUND "Found no handlers." ]
 
-Async.RunSynchronously <| async {
-    for i in 1..10000 do
-        do! Async.Sleep(200)
-        let conns = server.Connections
-        for c in conns do
-            let msg = Info(c.Id, i, server) |> print 3
-            do! c.SendAsync(msg) |> Async.AwaitTask
-}
+let server = getServer().SetHandler(app).Start()
 
-Log.debug "Exited"
+server.ClientEvents
+    :> IObservable<_>
+    |> Observable.subscribe(printfn "On Msg: %A")

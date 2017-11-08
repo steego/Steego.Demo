@@ -1,4 +1,4 @@
-FSharp.Core
 Suave
 Fasterflect
 Logary
+FSharp.Control.Reactive

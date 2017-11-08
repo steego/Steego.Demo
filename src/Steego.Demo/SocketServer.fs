@@ -16,6 +16,8 @@ open Suave.Sockets
 open Suave.Sockets.Control
 open Suave.WebSocket
 open System.Collections.Concurrent
+open System.Windows.Interop
+
 
 type Id = string
 
@@ -26,6 +28,10 @@ module Log =
     let debug(msg) = printfn "[%s DBG] %s" (getDate()) msg
 
 module Common = 
+    open Microsoft.FSharp.Control
+    open FSharp.Control.Reactive
+    open FSharp.Control.Reactive.Builders
+    
     /// Sends text to a websocket
     let private sendText (webSocket : WebSocket) (response : string) = 
         (let byteResponse = 
@@ -40,90 +46,140 @@ module Common =
         | (Text, data, true) -> Some(System.Text.Encoding.UTF8.GetString(data))
         | _ -> None
     
-    type Connection = 
+    type IConnection = 
         abstract Id : string
-        abstract OnReceive : IObservable<Message>
-        abstract SendAsync : string -> Task
     
     and Message = 
-        { Connection : Connection
+        { Connection : IConnection
           Message : string }
     
     type private SuaveConnection(context : HttpContext, ws : WebSocket) = 
         let id = Guid.NewGuid().ToString()
-        let onReceive = new Event<Message>()
-        member this.Id = id
-        member this.TellReceived(msg) = onReceive.Trigger(msg)
-        member this.OnReceive = onReceive.Publish :> IObservable<_>
-        member this.SendAsync(msg : string) = async { let! _ = msg |> sendText ws
-                                                      () } 
-        interface Connection with
-            member this.Id = id
-            member this.OnReceive = this.OnReceive
-            member this.SendAsync(msg) = 
-                this.SendAsync(msg) |> Async.StartAsTask :> Task
+        member _this.SendAsync(msg : string) = 
+            async { let! _ = msg |> sendText ws
+                    () }
+        override _this.ToString() = id
+        interface IConnection with
+            member _this.Id = id
     
-    type Server(defaultConfig : SuaveConfig) = 
+    type MessagePayload = string
+    
+    type ClientEvent = 
+        | Connected of IConnection
+        | ReceivedMessage of IConnection * MessagePayload
+        | Disconnected of IConnection
+
+    type ServerEvent = 
+        | MessageSent of IConnection * MessagePayload
+
+    type ClientMessage = {
+        Connections: Map<Id,IConnection>
+        Connection: IConnection
+        Message: string
+    }
+
+    let trackConnections(clientEvents:IEvent<ClientEvent>) = 
+        let connectionEvents = Event<ClientMessage>()
+
+        let foldEvent(state)(evt:ClientEvent) = 
+            let (conns, msg) = state
+            match evt with
+            | Connected(conn) ->  (conns |> Map.add conn.Id conn, msg)
+            | ReceivedMessage(conn, msg) -> (conns |> Map.add conn.Id conn, msg)
+            | Disconnected(conn) -> (conns |> Map.remove conn.Id, msg)
+
+        clientEvents
+        |> Event.scan(foldEvent) (Map.empty, null)
+
+
+        // connectionEvents.Publish.Subscribe(fun _ -> ())
+
+        // let rec trackConnections(connections) =
+        //     observe {
+        //          let! c = clientEvents
+        //          match c with
+        //          | Connected(conn) -> 
+        //             yield! trackConnections(connections |> Map.add conn.Id conn)
+        //          | Disconnected(conn) -> 
+        //             yield! trackConnections(connections |> Map.remove conn.Id)
+        //          | ReceivedMessage(conn, msg) -> 
+        //             // yield (connections, conn, msg)
+        //             yield { 
+        //                 Connections = connections
+        //                 Connection = conn
+        //                 Message = msg
+        //             }
+        //     }
+        // trackConnections(Map.empty)
+
+    let dispatchServerEvent = function
+        | MessageSent(conn, message) -> 
+            let myConn = conn :?> SuaveConnection
+            myConn.SendAsync(message) |> Async.Start
+
+    type WebHandler = IObservable<ClientMessage> -> IObservable<ServerEvent>
+
+    type Server(defaultConfig : SuaveConfig, stream: WebHandler) = 
         let mutable started = false
-        let connections = ConcurrentDictionary<string, SuaveConnection>()
-        let onReceive = new Event<Message>()
-        
-        let getConn (id : string) = 
-            let (exists, conn) = connections.TryGetValue(id)
-            conn
-        
+        let clientEvent = new Event<ClientEvent>()
+        let clientEventPublished = clientEvent.Publish |> trackConnections
+
+        let serverEvent = clientEventPublished |> stream
+
+        do serverEvent.Add(dispatchServerEvent)
+
         let socketHandler (ws : WebSocket) (context : HttpContext) = 
             socket { 
                 let mutable loop = true
                 let conn = SuaveConnection(context, ws)
-                let id = conn.Id
-                connections.AddOrUpdate(id, conn, fun x y -> conn) |> ignore
+
+                clientEvent.Trigger(Connected(conn))
+                
                 while loop do
                     let! msg = ws.read()
                     match msg with
                     | Message(str) -> 
-                        onReceive.Trigger({ Connection = getConn (id)
-                                            Message = str })
+                        clientEvent.Trigger(ReceivedMessage(conn, str))
                     | (Close, _, _) -> 
-                        let _ = connections.TryRemove(id)
+                        clientEvent.Trigger(Disconnected(conn))
                         loop <- false
                     | _ -> ()
             }
-        
-        let mutable app = 
+
+        let getApp(app, socketHandler) = 
             choose [ path "/websocket" >=> handShake socketHandler
-                     GET >=> Files.file "index.html"
+                     GET >=> app
                      NOT_FOUND "Found no handlers." ]
+
+        let mutable app = getApp((GET >=> file "index.html"), socketHandler)
         
         let start() = 
-            if not started then 
-                Log.debug("Started Webserver Booby!  QQQQQQQQQQQQQQQQQQQ")
-                lock connections (fun () -> started <- true)
-                let config = { defaultConfig with logger = Targets.create Verbose [||] }
-                let app (ctx : HttpContext) = async { return! (lock connections (fun () -> app)) ctx }
+            if not started then
+                lock clientEvent (fun () -> started <- true)
+                let config = { defaultConfig with
+                                    logger = Targets.create Verbose [||]
+                             }
+                let app (ctx : HttpContext) = async { 
+                    return! (lock clientEvent (fun () -> app)) ctx
+                }
                 Async.Start(async { startWebServer config app })
                 Log.debug "Web server started"
         
-        member this.Start() = start()
-        
-        member this.OnReceived = onReceive.Publish
-        
-        member this.Connections = 
-            connections
-            |> Seq.map (fun c -> c.Value :> Connection)
-            |> Seq.toArray
+        member this.Start() = 
+            start()
+            this
+        member _this.ClientEvents = clientEventPublished
+        member this.SetHandler(newApp) = 
+            app <- getApp(newApp, socketHandler)
+            this
 
-        member this.SendToAll(msg) = async {
-            for c in this.Connections do
-                do! c.SendAsync(msg) |> Async.AwaitTask
-        }
-                    
+let private servers = ConcurrentDictionary<int, Common.Server>()
 
-let private servers = System.Collections.Concurrent.ConcurrentDictionary<int, Common.Server>()
-
-let private createServer (port : int) = 
-    let config = { defaultConfig with bindings = [ HttpBinding.createSimple HTTP "127.0.0.1" port ] }
-    let server = Common.Server(config)
+let private createServer (port : int, handler: Common.WebHandler) = 
+    let config = { defaultConfig with 
+                    bindings = [ HttpBinding.createSimple HTTP "127.0.0.1" port ]
+                 }
+    let server = Common.Server(config, handler)
     server
 
 ///**Creates or fetches and instances of a web server at the specified port**
@@ -136,9 +192,11 @@ let private createServer (port : int) =
 ///
 ///**Exceptions**
 ///
-let getServer (port) = servers.GetOrAdd(port, fun port -> createServer (port))
-let startServer(port) = 
-    let server = getServer(port)
+let getServer (port, handler) = 
+    servers.GetOrAdd(port, fun port -> createServer (port, handler))
+
+let startServer(port, handler) = 
+    let server = getServer(port, handler)
     server.Start()
     server
         
