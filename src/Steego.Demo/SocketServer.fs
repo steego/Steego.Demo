@@ -78,16 +78,14 @@ module Common =
         Message: string
     }
 
+    let foldEvent(state)(evt:ClientEvent) = 
+        let (conns, conn, msg) = state
+        match evt with
+        | Connected(conn) ->  (conns |> Map.add conn.Id conn, conn, msg)
+        | ReceivedMessage(conn, msg) -> (conns |> Map.add conn.Id conn, conn, msg)
+        | Disconnected(conn) -> (conns |> Map.remove conn.Id, conn, msg)
+
     let trackConnections(clientEvents:IEvent<ClientEvent>) = 
-        let connectionEvents = Event<ClientMessage>()
-
-        let foldEvent(state)(evt:ClientEvent) = 
-            let (conns, msg) = state
-            match evt with
-            | Connected(conn) ->  (conns |> Map.add conn.Id conn, msg)
-            | ReceivedMessage(conn, msg) -> (conns |> Map.add conn.Id conn, msg)
-            | Disconnected(conn) -> (conns |> Map.remove conn.Id, msg)
-
         clientEvents
         |> Event.scan(foldEvent) (Map.empty, null)
 
