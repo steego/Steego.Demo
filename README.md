@@ -10,7 +10,7 @@ Change your working directory:
 cd src/Steego.Demo
 ```
 
-Start running the socket server:
+Start running the socket server in watch development mode.
 
 ```bash
 sh watch.sh fsharpi SocketServer.fsx
