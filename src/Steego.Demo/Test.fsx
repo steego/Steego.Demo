@@ -34,11 +34,12 @@ type App(root:string) =
         |> Seq.map (fun d -> Dir(d))
         |> Seq.toArray
 
+let fsiPrinter(o) =
+    explore 1 o
+    sprintf "%A" o
+
+#if __INTERACTIVE__
+fsi.AddPrinter(fsiPrinter)
+#endif
 
 let app = App(@"C:\Projects")
-
-app |> explore 1
-
-// open System.Linq
-
-// app.Folders |> printHtml 2 |> explore 1

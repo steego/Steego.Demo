@@ -16,6 +16,7 @@ open Suave.Sockets
 open Suave.Sockets.Control
 open Suave.WebSocket
 open System.Collections.Concurrent
+open System.IO
 
 type Id = string
 
@@ -26,6 +27,16 @@ module Log =
     let debug(msg) = printfn "[%s DBG] %s" (getDate()) msg
 
 module Common = 
+
+#if INTERACTIVE
+    let setFolder() = 
+        printfn "Changing diriectory from %s" (System.IO.Directory.GetCurrentDirectory())
+        printfn "Changing to: %s" (__SOURCE_DIRECTORY__)
+        System.IO.Directory.SetCurrentDirectory(__SOURCE_DIRECTORY__)
+#else
+    let setFolder() = ()
+#endif
+
     /// Sends text to a websocket
     let private sendText (webSocket : WebSocket) (response : string) = 
         (let byteResponse = 
@@ -96,7 +107,8 @@ module Common =
                      NOT_FOUND "Found no handlers." ]
         
         let start() = 
-            if not started then 
+            if not started then
+                setFolder()
                 Log.debug("Started Webserver Booby!  QQQQQQQQQQQQQQQQQQQ")
                 lock connections (fun () -> started <- true)
                 let config = { defaultConfig with logger = Targets.create Verbose [||] }
